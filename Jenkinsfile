@@ -24,6 +24,7 @@ pipeline {
                 ) else (
                     echo Port 8080 is free.
                 )
+                exit /b 0
                 '''
             }
         }
