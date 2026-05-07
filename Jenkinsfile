@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        APP_NAME = 'jwt-0.0.1-SNAPSHOT.jar'
+        APP_JAR = 'demo-0.0.1-SNAPSHOT.jar'
     }
 
     stages {
@@ -31,17 +31,12 @@ pipeline {
                 bat '''
                 echo Checking port 8080...
 
-                netstat -ano | findstr :8080 > nul
-
-                if %ERRORLEVEL%==0 (
-                    echo Port 8080 is in use. Killing process...
-
-                    for /F "tokens=5" %%a in ('netstat -ano ^| findstr :8080') do (
-                        taskkill /F /PID %%a
-                    )
-                ) else (
-                    echo Port 8080 is free.
+                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8080') do (
+                    echo Killing process %%a using port 8080
+                    taskkill /F /PID %%a > nul 2>&1
                 )
+
+                exit 0
                 '''
             }
         }
@@ -53,7 +48,9 @@ pipeline {
 
                 cd target
 
-                start "" java -jar %APP_NAME%
+                start "" java -jar %APP_JAR%
+
+                exit 0
                 '''
             }
         }
@@ -61,7 +58,9 @@ pipeline {
         stage('Verify Application') {
             steps {
                 bat '''
-                timeout /t 10
+                timeout /t 10 > nul
+
+                echo Checking if application is running on port 8080...
 
                 netstat -ano | findstr :8080
                 '''
@@ -72,7 +71,7 @@ pipeline {
     post {
 
         success {
-            echo 'Application deployed successfully on port 8080 ✅'
+            echo 'Application deployed successfully on http://localhost:8080 ✅'
         }
 
         failure {
