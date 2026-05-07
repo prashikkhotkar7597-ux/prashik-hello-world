@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         APP_JAR = 'demo-0.0.1-SNAPSHOT.jar'
+        APP_PORT = '8085'
     }
 
     stages {
@@ -29,9 +30,9 @@ pipeline {
         stage('Stop Existing App') {
             steps {
                 bat '''
-                echo Stopping old app on port 8080...
+                echo Stopping old app on port %APP_PORT%...
 
-                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8080') do (
+                for /f "tokens=5" %%a in ('netstat -ano ^| findstr :%APP_PORT%') do (
                     taskkill /F /PID %%a > nul 2>&1
                 )
 
@@ -47,8 +48,19 @@ pipeline {
 
                 cd target
 
-                REM IMPORTANT: use /B so it keeps running
-                start /B java -jar %APP_JAR%
+                start cmd /c "java -jar %APP_JAR% --server.port=%APP_PORT% > app.log 2>&1"
+
+                exit 0
+                '''
+            }
+        }
+
+        stage('Wait For Startup') {
+            steps {
+                bat '''
+                echo Waiting for startup...
+
+                ping 127.0.0.1 -n 20 > nul
 
                 exit 0
                 '''
@@ -58,15 +70,17 @@ pipeline {
         stage('Verify Application') {
             steps {
                 bat '''
-                echo Waiting for app startup...
+                echo Checking application on port %APP_PORT%...
 
-                timeout /t 15 > nul
+                netstat -ano | findstr :%APP_PORT%
 
-                echo Checking port 8080...
+                echo.
+                echo Calling API...
+                curl http://localhost:%APP_PORT%/hello
 
-                netstat -ano | findstr :8080 || echo App not running!
-
-                curl http://localhost:8080/hello || echo API not reachable yet
+                echo.
+                echo ===== APPLICATION LOG =====
+                type target\\app.log
 
                 exit 0
                 '''
@@ -75,12 +89,14 @@ pipeline {
     }
 
     post {
+
         success {
-            echo 'Application running at http://localhost:8080/hello ✅'
+            echo 'Application deployed successfully ✅'
+            echo 'URL: http://localhost:8085/hello'
         }
 
         failure {
-            echo 'Pipeline failed ❌'
+            echo 'Deployment failed ❌'
         }
     }
 }
