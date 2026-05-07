@@ -8,11 +8,13 @@ public class HelloController {
 
     @GetMapping("/hello")
     public String sayHello() {
+            System.out.println("Hello API called");
         return "Hello";
     }
 
     @GetMapping("/hi")
     public String sayHi() {
+            System.out.println("Hi API called");
         return "Hi";
     }
 }
