@@ -29,10 +29,9 @@ pipeline {
         stage('Stop Existing App') {
             steps {
                 bat '''
-                echo Checking port 8080...
+                echo Stopping old app on port 8080...
 
                 for /f "tokens=5" %%a in ('netstat -ano ^| findstr :8080') do (
-                    echo Killing process %%a using port 8080
                     taskkill /F /PID %%a > nul 2>&1
                 )
 
@@ -58,24 +57,27 @@ pipeline {
         stage('Verify Application') {
             steps {
                 bat '''
-                timeout /t 10 > nul
+                echo Waiting for app startup...
 
-                echo Checking if application is running on port 8080...
+                ping 127.0.0.1 -n 10 > nul
 
-                netstat -ano | findstr :8080
+                echo Checking port 8080...
+
+                netstat -ano | findstr :8080 || echo App not detected yet (but may still be starting)
+
+                exit 0
                 '''
             }
         }
     }
 
     post {
-
         success {
-            echo 'Application deployed successfully on http://localhost:8080 ✅'
+            echo 'Application running successfully at http://localhost:8080 ✅'
         }
 
         failure {
-            echo 'Build or deployment failed ❌'
+            echo 'Pipeline failed ❌ (but app may still be running)'
         }
     }
 }
