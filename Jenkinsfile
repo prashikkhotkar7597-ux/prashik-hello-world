@@ -47,7 +47,8 @@ pipeline {
 
                 cd target
 
-                start "" java -jar %APP_JAR%
+                REM IMPORTANT: use /B so it keeps running
+                start /B java -jar %APP_JAR%
 
                 exit 0
                 '''
@@ -59,11 +60,13 @@ pipeline {
                 bat '''
                 echo Waiting for app startup...
 
-                ping 127.0.0.1 -n 10 > nul
+                timeout /t 15 > nul
 
                 echo Checking port 8080...
 
-                netstat -ano | findstr :8080 || echo App not detected yet (but may still be starting)
+                netstat -ano | findstr :8080 || echo App not running!
+
+                curl http://localhost:8080/hello || echo API not reachable yet
 
                 exit 0
                 '''
@@ -73,11 +76,11 @@ pipeline {
 
     post {
         success {
-            echo 'Application running successfully at http://localhost:8080 ✅'
+            echo 'Application running at http://localhost:8080/hello ✅'
         }
 
         failure {
-            echo 'Pipeline failed ❌ (but app may still be running)'
+            echo 'Pipeline failed ❌'
         }
     }
 }
