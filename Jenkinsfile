@@ -21,23 +21,25 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                bat 'mvn clean package -DskipTests'
-            }
-        }
-
         stage('Stop Existing App') {
             steps {
                 bat '''
-                echo Stopping old app on port %APP_PORT%...
+                echo Stopping app on port %APP_PORT%...
 
                 for /f "tokens=5" %%a in ('netstat -ano ^| findstr :%APP_PORT%') do (
                     taskkill /F /PID %%a > nul 2>&1
                 )
 
+                ping 127.0.0.1 -n 5 > nul
+
                 exit 0
                 '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn clean package -DskipTests'
             }
         }
 
@@ -60,7 +62,7 @@ pipeline {
                 bat '''
                 echo Waiting for startup...
 
-                ping 127.0.0.1 -n 20 > nul
+                ping 127.0.0.1 -n 15 > nul
 
                 exit 0
                 '''
@@ -70,12 +72,11 @@ pipeline {
         stage('Verify Application') {
             steps {
                 bat '''
-                echo Checking application on port %APP_PORT%...
+                echo Checking application...
 
                 netstat -ano | findstr :%APP_PORT%
 
                 echo.
-                echo Calling API...
                 curl http://localhost:%APP_PORT%/hello
 
                 echo.
@@ -91,7 +92,7 @@ pipeline {
     post {
 
         success {
-            echo 'Application deployed successfully ✅'
+            echo 'Deployment successful ✅'
             echo 'URL: http://localhost:8085/hello'
         }
 
