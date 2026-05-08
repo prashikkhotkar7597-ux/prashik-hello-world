@@ -28,7 +28,7 @@ stages {
                                 git pull origin main
 
                                 echo "===== STOP OLD APP ====="
-                                pkill -f demo-0.0.1-SNAPSHOT.jar || true
+                                ps -ef | grep demo-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs -r kill -9
 
                                 echo "===== BUILD STARTED ====="
                                 mvn clean package -DskipTests
