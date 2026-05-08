@@ -1,5 +1,6 @@
 pipeline {
 
+```
 agent any
 
 stages {
@@ -17,22 +18,41 @@ stages {
                             sshTransfer(
                                 execCommand: '''
 
+                                set +e
+
                                 export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
                                 export PATH=$JAVA_HOME/bin:/usr/share/maven/bin:$PATH
 
-                                cd /opt/prashik-hello-world
+                                cd /opt/prashik-hello-world || exit 1
 
+                                echo "===== GIT PULL ====="
                                 git pull origin main
 
+                                echo "===== STOP OLD APP ====="
                                 pkill -f demo-0.0.1-SNAPSHOT.jar || true
 
+                                echo "===== BUILD STARTED ====="
                                 mvn clean package -DskipTests
+
+                                echo "===== BUILD FINISHED ====="
+
+                                ls -la target
+
+                                echo "===== STARTING APPLICATION ====="
 
                                 nohup java -jar target/demo-0.0.1-SNAPSHOT.jar --server.port=8085 > app.log 2>&1 &
 
                                 sleep 15
 
+                                echo "===== APPLICATION LOG ====="
+
                                 cat app.log
+
+                                echo "===== RUNNING PORTS ====="
+
+                                netstat -tulnp | grep 8085 || true
+
+                                exit 0
 
                                 '''
                             )
@@ -61,5 +81,6 @@ post {
     }
 
 }
+```
 
 }
