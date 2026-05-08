@@ -17,6 +17,10 @@ public class HelloController {
     }
     @GetMapping("/health")
     public String healthCheck() {
-        return "i am fine :D :X";
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.format.DateTimeFormatter formatter =
+                java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
+
+        return "I am fine :D Current time: " + now.format(formatter);
     }
 }
