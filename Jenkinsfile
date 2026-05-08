@@ -2,11 +2,6 @@ pipeline {
 
 agent any
 
-tools {
-    jdk 'JDK-21'
-    maven 'Maven'
-}
-
 stages {
 
     stage('Deploy To Ubuntu Server') {
@@ -63,6 +58,5 @@ post {
     }
 
 }
-
 
 }
