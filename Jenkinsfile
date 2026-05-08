@@ -17,6 +17,9 @@ stages {
                             sshTransfer(
                                 execCommand: '''
 
+                                export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+                                export PATH=$JAVA_HOME/bin:/usr/share/maven/bin:$PATH
+
                                 cd /opt/prashik-hello-world
 
                                 git pull origin main
