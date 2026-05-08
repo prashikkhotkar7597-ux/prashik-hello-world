@@ -21,7 +21,7 @@ pipeline {
 
                             transfers: [
                                 sshTransfer(
-                                    execCommand: """
+                                    execCommand: '''
 
                                     cd /opt/prashik-hello-world
 
@@ -37,7 +37,7 @@ pipeline {
 
                                     cat app.log
 
-                                    """
+                                    '''
                                 )
                             ],
 
