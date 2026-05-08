@@ -15,4 +15,8 @@ public class HelloController {
     public String sayHi() {
         return "Hi";
     }
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "i am fine :D";
+    }
 }
